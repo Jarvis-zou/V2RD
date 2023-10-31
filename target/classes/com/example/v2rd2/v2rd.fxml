@@ -46,10 +46,9 @@
         <Menu mnemonicParsing="false" text="File">
           <items>
             <MenuItem fx:id="OpenFile" mnemonicParsing="false" onAction="#onFileOpenClick" text="Open…" />
-            <Menu mnemonicParsing="false" text="Open Recent" />
+            <Menu fx:id="OpenRecentMenu" mnemonicParsing="false" text="Open Recent" />
             <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Save" />
-            <MenuItem mnemonicParsing="false" text="Save As…" />
+            <MenuItem mnemonicParsing="false" onAction="#onSaveToClick" text="Save To" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem fx:id="Quit" mnemonicParsing="false" onAction="#onQuitClick" text="Quit" />
           </items>
@@ -60,7 +59,7 @@
       <items>
         <AnchorPane>
           <children>
-            <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="FileLoaded" textAlignment="CENTER" wrapText="false">
+            <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="Files" textAlignment="CENTER" wrapText="false">
               <font>
                 <Font size="18.0" fx:id="x1" />
               </font>
@@ -68,6 +67,15 @@
                 <Color red="0.624" green="0.624" blue="0.624" fx:id="x2" />
               </textFill>
             </Label>
+                  <ScrollPane layoutX="11.0" layoutY="47.0" prefHeight="494.0" prefWidth="200.0">
+                    <content>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="479.0" prefWidth="200.0">
+                           <children>
+                              <ListView fx:id="videoList" layoutX="-6.0" prefHeight="494.0" prefWidth="200.0" />
+                           </children>
+                        </AnchorPane>
+                    </content>
+                  </ScrollPane>
           </children>
         </AnchorPane>
         <ScrollPane prefHeight="-1.0" prefWidth="-1.0">
@@ -75,7 +83,12 @@
             <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0">
               <children>
                 <Label alignment="CENTER" font="$x1" layoutX="14.0" layoutY="14.0" style="&#10;" text="Preview" textAlignment="CENTER" textFill="$x2" wrapText="false" />
-                <MediaView fx:id="MediaPreview" fitHeight="300.0" fitWidth="400.0" layoutX="17.0" layoutY="37.0" AnchorPane.topAnchor="37.0" />
+                        <StackPane layoutX="3.0" layoutY="41.0" prefHeight="342.0" prefWidth="424.0">
+                           <children>
+                      <MediaView fx:id="MediaPreview" fitHeight="300.0" fitWidth="400.0" />
+                              <MediaView fitHeight="200.0" fitWidth="200.0" />
+                           </children>
+                        </StackPane>
               </children>
             </AnchorPane>
           </content>
