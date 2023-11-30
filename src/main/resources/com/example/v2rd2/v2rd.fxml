@@ -39,6 +39,8 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 <VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.v2rd2.APPController">
   <children>
     <MenuBar VBox.vgrow="NEVER">
@@ -83,12 +85,13 @@
             <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0">
               <children>
                 <Label alignment="CENTER" font="$x1" layoutX="14.0" layoutY="14.0" style="&#10;" text="Preview" textAlignment="CENTER" textFill="$x2" wrapText="false" />
-                        <StackPane layoutX="3.0" layoutY="41.0" prefHeight="342.0" prefWidth="424.0">
+                        <StackPane layoutX="5.0" layoutY="40.0" prefHeight="340.0" prefWidth="420.0">
                            <children>
-                      <MediaView fx:id="MediaPreview" fitHeight="300.0" fitWidth="400.0" />
-                              <MediaView fitHeight="200.0" fitWidth="200.0" />
+                               <MediaView fx:id="MediaPreview" fitHeight="300.0" fitWidth="400.0" />
+                               <MediaView fitHeight="200.0" fitWidth="200.0" />
                            </children>
                         </StackPane>
+                        <Pane fx:id="functionBoard" layoutX="5.0" layoutY="390.0" prefHeight="150.0" prefWidth="430.0"/>
               </children>
             </AnchorPane>
           </content>
@@ -96,6 +99,37 @@
         <AnchorPane>
           <children>
             <Label alignment="CENTER" font="$x1" layoutX="14.0" layoutY="14.0" style="&#10;" text="Details" textAlignment="CENTER" textFill="$x2" wrapText="false" />
+                  <GridPane fx:id="Details" alignment="TOP_RIGHT" layoutX="10.0" layoutY="45.0">
+                    <columnConstraints>
+                      <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <Label text="Title:" GridPane.rowIndex="0" />
+                        <Label text="Resolution:" GridPane.rowIndex="1" />
+                        <Label text="Audio Channel:" GridPane.rowIndex="2" />
+                        <Label text="File Location:" GridPane.rowIndex="3" />
+                        <Label text="Duration:" GridPane.rowIndex="4" />
+                        <Label text="Frame Rate:" GridPane.rowIndex="5" />
+                        <Label text="Format:" GridPane.rowIndex="6" />
+                        <Label fx:id="title" GridPane.columnIndex="1" />
+                        <Label fx:id="resolution" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Label fx:id="audioChannel" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label fx:id="fileLocation" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <Label fx:id="duration" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        <Label fx:id="frameRate" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        <Label fx:id="videoFormat" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                     </children>
+                  </GridPane>
           </children>
         </AnchorPane>
       </items>
