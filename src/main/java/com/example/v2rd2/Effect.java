@@ -56,14 +56,16 @@ public class Effect {
         String videoFilePath = videoFile.getAbsolutePath();
         String newFileName = videoFile.getName().replaceFirst("[.][^.]+$", "") + "_transformed.mp4";
         File transformedVideo = new File(saveDir, newFileName);
+
+        // Put process code in a task to prevent thread conflicts
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-
                 try (FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(videoFilePath)) {
                     frameGrabber.start();
                     FFmpegFrameRecorder frameRecorder = new FFmpegFrameRecorder(transformedVideo, frameGrabber.getImageWidth(), frameGrabber.getImageHeight());
 
+                    // set basic configurations
                     frameRecorder.setFrameRate(frameGrabber.getFrameRate());
                     frameRecorder.setVideoCodec(frameGrabber.getVideoCodec());
                     frameRecorder.setAudioCodec(frameGrabber.getAudioCodec());
@@ -85,10 +87,12 @@ public class Effect {
                         updateProgress(processedFrames, frameCount); // update progressBar
                     }
 
+                    // close grabber and recorder after process finished
                     frameRecorder.stop();
                     frameGrabber.stop();
                     frameRecorder.release();
                     frameGrabber.release();
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
