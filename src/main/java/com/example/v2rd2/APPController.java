@@ -2,9 +2,6 @@ package com.example.v2rd2;
 
 import javafx.fxml.FXML;
 
-import java.io.IOException;
-import java.util.LinkedList;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
@@ -14,7 +11,6 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.media.Media;
@@ -25,16 +21,21 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
-import java.io.File;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
-import javafx.event.ActionEvent;
 import javafx.application.Platform;
+
+
+import java.io.IOException;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 
+import com.example.v2rd2.Effect;
 
 
 public class APPController {
@@ -72,9 +73,10 @@ public class APPController {
     private MediaView MediaPreview;
 
     private MediaPlayer mediaPlayer;
-
+    private String chosenEffect;
     private LinkedList<File> recentFiles = new LinkedList<>();
-    private File selectedDirectory;
+    private File saveDirectory = null;
+    private File videoOnBoard;
 
     @FXML
     protected void onFileOpenClick(ActionEvent event) throws IOException {
@@ -83,12 +85,12 @@ public class APPController {
         fileChooser.setTitle("Open");
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("MP4 files (*.mp4)", "*.mp4");
         fileChooser.getExtensionFilters().add(extFilter);
-        File file = fileChooser.showOpenDialog(new Stage());
+        File currFile = fileChooser.showOpenDialog(new Stage());
 
         // once open the mp4 file, user can immediately preview the file content
-        if (file != null) {
-            addFileToOpenRecentMenu(file);  // add file to recent file list
-            playSelectedFile(file);
+        if (currFile != null) {
+            addFileToOpenRecentMenu(currFile);  // add file to recent file list
+            playSelectedFile(currFile, false);
         }
     }
 
@@ -98,7 +100,7 @@ public class APPController {
 
         // stores recent file in fxml
         MenuItem recentFileItem = new MenuItem(fileName);
-        recentFileItem.setOnAction(event -> playSelectedFile(file));
+        recentFileItem.setOnAction(event -> playSelectedFile(file, false));
         OpenRecentMenu.getItems().add(recentFileItem);
 
         // after we add this file into RecentFileMenu, we add it into a listview
@@ -118,7 +120,7 @@ public class APPController {
         for (File recentFile : recentFiles) {
             if (count >= 5) { break; }
             MenuItem recentFileName = new MenuItem(recentFile.getName());
-            recentFileName.setOnAction(event -> playSelectedFile(recentFile));
+            recentFileName.setOnAction(event -> playSelectedFile(recentFile, false));
             OpenRecentMenu.getItems().add(recentFileName);
             count++;
         }
@@ -131,8 +133,7 @@ public class APPController {
                     String selectedFileName = (String) selectedFile;
                     for (File recentFile : recentFiles) {
                         if (recentFile.getName().equals(selectedFileName)) {
-                            ShowFileDetails(recentFile);
-                            playSelectedFile(recentFile);
+                            playSelectedFile(recentFile, false);
                             break;
                         }
                     }
@@ -144,7 +145,10 @@ public class APPController {
     /**
      * This method initiate all components in the main operation board.
      */
-    private void initFunctionBoard(boolean allowPreview) {
+    private void initFunctionBoard(boolean allowPreview, boolean isPreview) {
+        // clear all components
+        functionBoard.getChildren().clear();
+
         // Initiate play/pause button
         Button playPauseButton = new Button();
         changeIcon(playPauseButton);
@@ -167,30 +171,50 @@ public class APPController {
             }
         });
 
-        // 这里的列表用另一个算法类的方法来代替
+        // choose Effect
+        Effect effectControl = new Effect();
+        ArrayList<String> effectList = effectControl.getEffectList();
         ObservableList<String> effectOptions =
-                FXCollections.observableArrayList("Effect 1", "Effect 2", "Effect 3");
+                FXCollections.observableArrayList(effectList);
         ComboBox<String> effectComboBox = new ComboBox<>(effectOptions);
         effectComboBox.setPromptText("Select Effect");
-
-        // 选择特效算法之后的操作
         effectComboBox.setOnAction(event -> {
-            String selectedEffect = effectComboBox.getValue();
-            // 选择了之后和算法类内部比对
+            chosenEffect = effectComboBox.getValue();
         });
 
-        // Initiate transform button
+
+        Button previewButton = new Button("Preview");
         Button transformButton = new Button("Transform");
 
         // Initiate preview button
-        Button previewButton = new Button("Preview");
+        if (isPreview) {
+            transformButton.setDisable(true);
+        }
         if (!allowPreview) {
             previewButton.setDisable(true);
         }
         previewButton.setOnAction(event -> {
-//            File file = 算法保存的file
-//            playSelectedFile();·
+            transformButton.setDisable(true);
+            Path savedPath = getSavedPath(videoOnBoard, saveDirectory.getAbsolutePath());
+            playSelectedFile(savedPath.toFile(), true);
         });
+
+        // Initiate transform button
+        transformButton.setOnAction(event -> {
+            if (saveDirectory == null) {
+                onSaveToClick();
+            } else {
+                effectControl.applyAlgo(chosenEffect, videoOnBoard, saveDirectory);
+                previewButton.setDisable(false);
+            }
+
+        });
+
+
+
+
+
+
 
         // Set layout and add components
         playPauseButton.setLayoutX(190);
@@ -211,6 +235,15 @@ public class APPController {
         functionBoard.getChildren().addAll(playPauseButton, effectComboBox, transformButton, previewButton);
     }
 
+    private Path getSavedPath(File file, String savePath) {
+        String fileName = file.getName();
+        int dotIndex = fileName.lastIndexOf(".");
+        String fileTitle = fileName.substring(0, dotIndex);
+        String fileSuffix = fileName.substring(dotIndex);
+        String newFileName = fileTitle + "_transformed" + fileSuffix;
+        return Paths.get(savePath).resolve(newFileName);
+    }
+
     private void changeIcon(Button playPauseButton) {
         Image newImage;
         if (!videoPaused) {
@@ -224,7 +257,18 @@ public class APPController {
         playPauseButton.setGraphic(newImageView);
     }
 
-    private void playSelectedFile(File file) {
+    private boolean checkPreviewStatus(File videoFile) {
+        String savePathName;
+        if (saveDirectory != null){
+            savePathName = saveDirectory.getAbsolutePath();
+        } else {
+            return false;
+        }
+        return Files.exists(getSavedPath(videoFile, savePathName));
+    }
+
+    private void playSelectedFile(File file, boolean isPreview) {
+        videoOnBoard = file;  // Assign Current Playing Video
         Media media = new Media(file.toURI().toString());
         mediaPlayer = new MediaPlayer(media);
         MediaPreview.setMediaPlayer(mediaPlayer);
@@ -233,8 +277,8 @@ public class APPController {
         ShowFileDetails(file);
 
         // here need to check curr file preview status
-
-        initFunctionBoard(false);  // show function board
+        boolean previewStatus = checkPreviewStatus(file);
+        initFunctionBoard(previewStatus, isPreview);  // show function board
         mediaPlayer.setOnReady(() -> {
             mediaPlayer.play();
         });
@@ -289,12 +333,11 @@ public class APPController {
     }
 
     @FXML
-    protected void onSaveToClick(ActionEvent event) {
+    protected void onSaveToClick() {
         // User decide files will be saved to which directory
-        // Save path will be stored in this.selectedDirectory
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Select Directory to Save");
-        selectedDirectory = directoryChooser.showDialog(new Stage());
+        saveDirectory = directoryChooser.showDialog(new Stage());
     }
 
     @FXML
