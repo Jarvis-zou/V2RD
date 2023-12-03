@@ -15,9 +15,6 @@ public class APP extends Application{
         primaryStage.setTitle("V2RD");
         primaryStage.setScene(scene);
 
-
-
-
         primaryStage.show();
     }
 

@@ -4,6 +4,8 @@ import javafx.fxml.FXML;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -13,6 +15,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
@@ -34,9 +37,6 @@ import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
 import org.bytedeco.javacv.FFmpegFrameGrabber;
-
-import com.example.v2rd2.Effect;
-
 
 public class APPController {
     // main user operation board
@@ -204,17 +204,29 @@ public class APPController {
             if (saveDirectory == null) {
                 onSaveToClick();
             } else {
-                effectControl.applyAlgo(chosenEffect, videoOnBoard, saveDirectory);
+                // Create a new stage to show progress
+                Stage progressStage = new Stage();
+                ProgressBar progressBar = new ProgressBar(0);
+                progressBar.setPrefWidth(300);
+                Label progressLabel = new Label("Applying effect to " + videoOnBoard.getName());
+                VBox vbox = new VBox(10);
+                vbox.setAlignment(Pos.CENTER);
+                vbox.getChildren().addAll(progressLabel, progressBar);
+                Scene scene = new Scene(vbox, 400, 100);
+
+                progressStage.setScene(scene);
+                progressStage.setTitle("Processing Video");
+                progressStage.show();
+
+                // Apply effect in another thread in case block UI thread
+                new Thread(() -> {
+                    effectControl.applyAlgo(chosenEffect, videoOnBoard, saveDirectory, progressBar);
+                }).start();
+
+//                progressStage.close();
                 previewButton.setDisable(false);
             }
-
         });
-
-
-
-
-
-
 
         // Set layout and add components
         playPauseButton.setLayoutX(190);

@@ -3,7 +3,9 @@ module com.example.v2rd2 {
     requires javafx.fxml;
     requires javafx.media;
     requires java.desktop;
-    requires javacv;
+    requires org.bytedeco.opencv;
+    requires org.bytedeco.javacv;
+    requires junit;
 
 
     opens com.example.v2rd2 to javafx.fxml;
